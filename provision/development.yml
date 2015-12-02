@@ -1,0 +1,17 @@
+---
+- hosts: all
+  sudo: true
+  gather_facts: true
+  roles:
+    - common
+
+
+- hosts: masters
+  roles:
+    - docker
+    - master
+
+- hosts: slaves
+  roles:
+    - docker
+    - minion

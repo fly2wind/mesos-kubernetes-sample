@@ -1,0 +1,50 @@
+---
+- name: update apt cache
+  apt: update_cache=yes cache_valid_time=86400
+
+- name: check aufs module
+  modprobe: name=aufs state=present
+  register: aufs_module_result
+  ignore_errors: true
+
+- include: filesystems/aufs.yml
+  when: aufs_module_result|failed
+
+- name: add apt key
+  apt_key: id=2C52609D keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' state=present
+
+- name: install package
+  apt: name={{ item }} install_recommends=no state=present
+  with_items:
+    - docker-engine
+    - python-pip
+
+- name: install pip
+  pip: name=pip state=latest
+
+- name: install pip library
+  pip: name=docker-py version=1.1.0 state=present
+
+- name: configure grub
+  lineinfile: dest=/etc/default/grub regexp='^GRUB_CMDLINE_LINUX=""' line='GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"'
+  notify: 
+    - update grub
+
+- name: configure docker files
+  file: path=/etc/init.d/docker state=absent
+
+- name: configure docker packages
+  template: src=default/docker.j2 dest=/etc/default/docker owner=root group=root mode=0644
+  notify:
+    - restart docker
+
+- name: configure docker upstart
+  template: src=init/docker.conf.j2 dest=/etc/init/docker.conf owner=root group=root mode=0644
+  notify:
+    - restart docker
+
+- name: ensure docker service
+  service: name=docker state=started

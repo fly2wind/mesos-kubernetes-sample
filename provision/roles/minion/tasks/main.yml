@@ -1,0 +1,73 @@
+---
+#- name: docker run proxy
+#  docker:
+#    name:  proxy
+#    image: gcr.io/google_containers/hyperkube:v1.1.0
+#    state: started
+#    net: host
+#    privileged: true
+#    command: "/hyperkube proxy --master=http://10.245.1.2:8080"
+#    restart_policy: always
+
+#- name: docker run kubelet
+#  docker:
+#    name:  kubelet
+#    image: gcr.io/google_containers/hyperkube:v1.1.0
+#    state: started
+#    net: host
+#    privileged: true
+#    volumes:
+#      - "/:/rootfs:ro"
+#      - "/sys:/sys:ro"
+#      - "/dev:/dev"
+#      - "/var/lib/docker/:/var/lib/docker:ro"
+#      - "/var/lib/kubelet/:/var/lib/kubelet:rw"
+#      - "/var/run:/var/run:rw"
+#    command: "/hyperkube kubelet --address='0.0.0.0' --api-servers=http://10.245.1.2:8080 --cadvisor_port=4193"
+#    restart_policy: always
+
+#- name: docker run cadvisor
+#  docker:
+#    name:  cadvisor
+#    image: google/cadvisor:latest
+#    state: started
+#    ports: "4193:8080"
+#    volumes:
+#      - "/:/rootfs:ro"
+#      - "/sys:/sys:ro"
+#      - "/var/run:/var/run:rw"
+#      - "/var/lib/docker/:/var/lib/docker:ro"
+#    restart_policy: always
+
+- name: docker run mesos slave
+  docker:
+    name:  mesos-slave
+    image: mesosphere/mesos-slave:0.25.0-0.2.70.ubuntu1404
+    state: started
+    pid: host
+    net: host
+    volumes:
+      - /sys:/sys
+      - /sandbox:/sandbox
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1:ro
+    command: "--ip={{ ansible_eth1.ipv4.address }}
+              --port=5051
+              --hostname={{ ansible_eth1.ipv4.address }}
+              --master=10.245.5.2:5050
+              --containerizers=mesos,docker
+              --isolation=cgroups/cpu,cgroups/mem
+              --log_dir=/var/log/mesos
+              --work_dir=/sandbox
+              "
+    privileged: true
+    restart_policy: always
+
+
+
+
+
+
+
+

@@ -1,0 +1,9 @@
+[masters]
+master ansible_ssh_host=10.245.5.2
+
+[slaves]
+slave-1 ansible_ssh_host=10.245.5.5
+slave-2 ansible_ssh_host=10.245.5.6
+
+[clusters:children]
+masters

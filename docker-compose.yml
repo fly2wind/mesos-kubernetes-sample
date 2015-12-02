@@ -1,0 +1,12 @@
+db:
+  image: mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: portus
+registry:
+  image: registry:2
+  ports:
+    - 5000:5000
+  volumes:
+    - /Users/qsma/Documents/workspaces/operations/thoughtworks/registry/data:/var/lib/registry
+    - /Users/qsma/Documents/workspaces/operations/thoughtworks/registry/config.yml:/etc/docker/registry/config.yml:ro
+  
