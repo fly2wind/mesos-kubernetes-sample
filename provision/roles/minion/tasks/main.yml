@@ -48,10 +48,10 @@
     net: host
     volumes:
       - /sys:/sys
+      - /dev:/dev
       - /sandbox:/sandbox
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1:ro
     command: "mesos-slave
               --ip={{ ansible_eth1.ipv4.address }}
               --port=5051
