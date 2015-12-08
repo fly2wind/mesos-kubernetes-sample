@@ -5,7 +5,4 @@
 - name: replace security apt source
   replace: dest=/etc/apt/sources.list regexp="http\:\/\/security\.ubuntu\.com\/ubuntu" replace="http://mirrors.aliyun.com/ubuntu"
 
-- name: fixes apt-get bug
-  file: path="/var/lib/apt/lists/mirrors.aliyun.com_ubuntu_dists_trusty_main_i18n_Translation-en%5fUS" state=absent
-
 - include: ntp/main.yml 
