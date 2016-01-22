@@ -1,0 +1,32 @@
+---
+- name: add apt key
+  apt_key: id=2582E0C5 keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb https://repos.influxdata.com/ubuntu trusty stable' state=present
+
+- name: install influxdb package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - influxdb
+
+- name: generate influxdb config
+  template: src=conf/influxdb.conf.j2 dest=/etc/zookeeper/conf/influxdb.conf owner=root group=root mode=0644
+  notify:
+    - restart influxdb
+
+- name: configure influxdb packages
+  template: src=default/influxdb.j2 dest=/etc/default/influxdb owner=root group=root mode=0644
+  notify:
+    - remove influxdb metadata
+
+#- name: remove influxdb sysvinit
+#  file: path=/etc/init.d/influxdb state=absent
+#  notify:
+#    - restart influxdb
+
+- name: register influxdb service
+  service: name=influxdb state=started
+
+- name: register influxdb service with the consul agent
+  consul: service_name=influxdb service_port={{ influxdb_meta_port }} script="service influxdb status" interval=60s timeout=2s

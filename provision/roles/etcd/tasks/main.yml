@@ -1,28 +1,17 @@
 ---
-- name: docker run etcd
-  docker:
-    name:  etcd
-    image: baselibrary/etcd:2.2
-    state: reloaded
-    net: host
-    volumes:
-      - "/var/lib/etcd:/var/lib/etcd"
-    command: "
-      -name {{ ansible_hostname }}
-      {% if etcd_discovery != none -%}
-      -discovery {{ etcd_discovery }}
-      {% elif etcd_discovery_srv != none -%}
-      -discovery-srv {{ etcd_discovery_srv }}
-      {% else -%}
-      -initial-cluster {% for host in groups[etcd_group] %}{{ host }}={{ etcd_peer_scheme }}://{{ hostvars[host]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}
-      -initial-cluster-token {{ etcd_initial_cluster_token }}
-      -initial-cluster-state {{ etcd_initial_cluster_state }}
-      {% endif -%}
-      -initial-advertise-peer-urls {{ etcd_initial_advertise_peer_urls }}
-      -advertise-client-urls {{ etcd_advertise_client_urls }}
-      -listen-client-urls {{ etcd_listen_client_urls }}
-      -listen-peer-urls {{ etcd_listen_peer_urls }}
-      -data-dir /var/lib/etcd
-    "
-    privileged: false
-    restart_policy: always
+- name: configure etcd upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "default/etcd.j2",   dest: "/etc/default/etcd"   }
+    - { src: "init/etcd.conf.j2", dest: "/etc/init/etcd.conf" }
+  notify:
+    - restart etcd
+
+- name: register etcd service
+  service: name=etcd state=started
+
+- name: register etcd service with the consul agent
+  consul: service_name=etcd service_port={{ etcd_client_port }} script="docker exec etcd etcdctl cluster-health" interval=60s timeout=2s
+
+- include: skydns.yml
+  when: cluster_dns is defined

@@ -1,0 +1,28 @@
+description "Kubelet Service"
+
+start on (filesystem and started docker)
+stop on stopping docker
+
+respawn
+
+pre-start script
+  mkdir -p /var/run/kubernetes
+  KUBELET=/usr/bin/$UPSTART_JOB
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  if [ -f $KUBELET ]; then
+    exit 0
+  fi
+  exit 22
+end script
+
+script
+  KUBELET=/usr/bin/$UPSTART_JOB
+  KUBELET_OPTS=""
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  exec "$KUBELET" $KUBELET_OPTS
+end script
+

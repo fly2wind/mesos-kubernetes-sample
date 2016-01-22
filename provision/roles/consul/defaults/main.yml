@@ -1,0 +1,9 @@
+---
+consul_servers_group: role=control
+
+consul_server: false
+consul_dc: dc1
+consul_advertise: "{{ private_ipv4 }}"
+consul_start_join: "{% for host in groups[consul_servers_group] %}\"{{ hostvars[host].private_ipv4 }}\"{% if not loop.last %}, {% endif %}{% endfor %}"
+consul_retry_join: "{% for host in groups[consul_servers_group] %}\"{{ hostvars[host].private_ipv4 }}\"{% if not loop.last %}, {% endif %}{% endfor %}"
+consul_bootstrap_expect: "{{ groups[consul_servers_group] | length }}"

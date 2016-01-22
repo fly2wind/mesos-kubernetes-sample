@@ -6,10 +6,13 @@ VAGRANTFILE_API_VERSION = "2"
 
 # cluster configure
 cluster = {
-  "master"   => { :ip => "10.245.5.2", :cpus => 1, :memory => 1024 },
-  "proxy-1"  => { :ip => "10.245.5.4", :cpus => 1, :memory => 1024 },
-  "slave-1"  => { :ip => "10.245.5.5", :cpus => 2, :memory => 2048 },
-  "slave-2"  => { :ip => "10.245.5.6", :cpus => 2, :memory => 2048 },
+  "edge-1"   => { :ip => "10.245.5.2", :cpus => 1, :memory => 1024 },
+  "master-1" => { :ip => "10.245.5.3", :cpus => 1, :memory => 1024 },
+  "master-2" => { :ip => "10.245.5.4", :cpus => 1, :memory => 1024 },
+  "master-3" => { :ip => "10.245.5.5", :cpus => 1, :memory => 1024 },
+  "slave-1"  => { :ip => "10.245.5.6", :cpus => 1, :memory => 1024 },
+  "slave-2"  => { :ip => "10.245.5.7", :cpus => 1, :memory => 1024 },
+  "slave-3"  => { :ip => "10.245.5.8", :cpus => 1, :memory => 1024 },
 }
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -26,27 +29,34 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
   if Vagrant.has_plugin?("vagrant-vbguest")
     config.vbguest.auto_update = false
+    config.vbguest.no_remote = true
   end
   if Vagrant.has_plugin?("vagrant-hostmanager")
-    config.hostmanager.enabled = false
-    config.hostmanager.manage_host = false
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
     config.hostmanager.ignore_private_ip = false
   end
   # ssh
+  config.ssh.username = 'vagrant'
   config.ssh.insert_key = false
+  config.ssh.forward_agent = true
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  config.ssh.private_key_path = ["#{ENV['HOME']}/.ssh/id_rsa", "#{ENV['HOME']}/.vagrant.d/insecure_private_key"]
+  
 
 ###############################################################################
 # Base box                                                                    #
 ###############################################################################
-  config.vm.box         = "ubuntu/trusty64"
-
+  config.vm.box              = "ubuntu/trusty64"
+  config.vm.box_check_update = false
+  
   cluster.each_with_index do |(hostname, info), index|
     config.vm.define hostname do |cfg|
       cfg.vm.hostname = hostname
 
       # virtualbox
       cfg.vm.provider :virtualbox do |vb|
-        vb.name   = "kubernetes-#{hostname}"
+        vb.name   = "k8s-#{hostname}"
         vb.cpus   = info[:cpus]
         vb.memory = info[:memory]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -59,9 +69,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
 
       # provision
+      cfg.vm.provision "shell", inline: <<-SCRIPT
+        printf "%s\n" "#{File.read("#{ENV['HOME']}/.ssh/id_rsa")}" > /root/.ssh/id_rsa
+        printf "%s\n" "#{File.read("#{ENV['HOME']}/.ssh/id_rsa.pub")}" > /root/.ssh/id_rsa.pub
+        chmod 400 /root/.ssh/id_rsa
+        chmod 600 /root/.ssh/id_rsa.pub
+      SCRIPT
       if index == cluster.size - 1
         cfg.vm.provision "ansible" do |ansible|
-          ansible.sudo           = true
           ansible.limit          = "all"
           ansible.playbook       = "provision/development.yml"
           ansible.inventory_path = "provision/development"

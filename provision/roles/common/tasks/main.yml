@@ -1,8 +1,26 @@
 ---
-- name: replace archive apt source
-  replace: dest=/etc/apt/sources.list regexp="http\:\/\/archive\.ubuntu\.com\/ubuntu" replace="http://mirrors.aliyun.com/ubuntu"
+- name: install system package
+  apt: name="{{item}}" install_recommends=no state=present
+  with_items:
+    - ntp
+    - ntpdate
+    - sshpass
+    - python-pip
 
-- name: replace security apt source
-  replace: dest=/etc/apt/sources.list regexp="http\:\/\/security\.ubuntu\.com\/ubuntu" replace="http://mirrors.aliyun.com/ubuntu"
+- name: install pip
+  pip: name=pip state=latest
 
-- include: ntp/main.yml 
+#- name: install docker library
+#  pip: name=docker-py version=1.1.0 state=present
+
+- name: install consul library
+  pip: name=python-consul state=present
+
+- name: install nsenter tools
+  copy: src="nsenter" dest="/usr/bin/" owner=root group=root mode=0755
+
+- name: configure system hosts
+  template: src=hosts.j2 dest=/etc/hosts mode=0644
+
+- name: configure system authorizedkey
+  authorized_key: user=root key="{{ lookup('file', '/Users/qsma/.ssh/id_rsa.pub') }}"

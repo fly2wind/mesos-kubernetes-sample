@@ -1,0 +1,18 @@
+#Listen on all interfaces
+interface=*
+
+addn-hosts=/etc/hosts
+
+# Never forward addresses in the non-routed address spaces.
+bogus-priv
+
+#Set upstream dns servers
+server=8.8.8.8
+server=8.8.4.4
+
+# Forward k8s domain to kube-dns
+{% for host in groups[kube_masters_group] %}
+{% if hostvars[host].private_ipv4 != private_ipv4 %}
+server=/{{ kube_dns_domain }}/{{ hostvars[host].private_ipv4 }}#153
+{% endif %}
+{% endfor %}

@@ -1,0 +1,42 @@
+---
+- name: add apt key
+  apt_key: id=02A818DD keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh trusty-cdh5 contrib' state=present
+
+- name: install zookeeper package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - zookeeper
+    - zookeeperd
+
+- name: install zookeeper scripts
+  copy: src="{{ item }}" dest=/usr/local/bin owner=root group=root mode=0755
+  with_items:
+    - check-zookeeper.sh
+
+- name: generate zookeeper consul-services
+  template: src=consul/{{ item }}.j2 dest=/etc/consul/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - zookeeper-consul.json
+  notify:
+    - reload consul
+
+- name: generate zookeeper id
+  template: src=myid.j2 dest=/var/lib/zookeeper/myid owner=root group=root mode=0644
+  notify:
+    - restart zookeeper
+
+- name: generate zookeeper config
+  template: src=conf/zoo.cfg.j2 dest=/etc/zookeeper/conf/zoo.cfg owner=root group=root mode=0644
+  notify:
+    - restart zookeeper
+
+- name: remove zookeeper sysvinit
+  file: path=/etc/init.d/zookeeper state=absent
+  notify:
+    - restart zookeeper
+
+- name: register zookeeper service
+  service: name=zookeeper state=started

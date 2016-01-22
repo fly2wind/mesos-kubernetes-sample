@@ -1,0 +1,10 @@
+- name: configure skydns upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "default/skydns.j2",   dest: "/etc/default/skydns"   }
+    - { src: "init/skydns.conf.j2", dest: "/etc/init/skydns.conf" }
+  notify:
+    - restart skydns
+
+- name: register skydns service
+  service: name=skydns state=started

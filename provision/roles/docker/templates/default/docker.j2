@@ -4,7 +4,7 @@
 #DOCKER="/usr/local/bin/docker"
 
 # Use DOCKER_OPTS to modify the daemon startup options.
-DOCKER_OPTS="-s aufs --registry-mirror https://192.168.99.2 --insecure-registry 192.168.99.2"
+DOCKER_OPTS="--host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --dns {{ private_ipv4 }} --dns-search service.{{ serv_dns_domain }} {% if kube_dns == true %}--dns-search {{ kube_dns_domain }}{% endif %} --storage-driver=aufs {{ docker_opts }} "
 
 # If you need Docker to use an HTTP proxy, it can also be specified here.
 #export http_proxy="http://127.0.0.1:3128/"

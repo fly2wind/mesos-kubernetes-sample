@@ -1,10 +1,12 @@
-[masters]
-master ansible_ssh_host=10.245.5.2
+[role=edge]
+edge-1 ansible_ssh_host=10.245.5.2 
 
-[slaves]
-proxy-1 ansible_ssh_host=10.245.5.4
-slave-1 ansible_ssh_host=10.245.5.5
-slave-2 ansible_ssh_host=10.245.5.6
+[role=control]
+master-1 ansible_ssh_host=10.245.5.3 
+master-2 ansible_ssh_host=10.245.5.4 
+master-3 ansible_ssh_host=10.245.5.5 
 
-[clusters:children]
-masters
+[role=worker]
+slave-1 ansible_ssh_host=10.245.5.6 
+slave-2 ansible_ssh_host=10.245.5.7 
+slave-3 ansible_ssh_host=10.245.5.8 

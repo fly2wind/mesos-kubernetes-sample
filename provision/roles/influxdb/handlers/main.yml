@@ -1,0 +1,12 @@
+---
+- name: restart influxdb
+  service: name=influxdb state=restarted
+
+- name: remove influxdb metadata
+  command: "{{ item }}"
+  with_items:
+    - service influxdb stop
+    - rm -rf /var/lib/influxdb/meta/id
+    - rm -rf /var/lib/influxdb/meta/raft.db
+    - rm -rf /var/lib/influxdb/meta/peers.json
+    - service influxdb start

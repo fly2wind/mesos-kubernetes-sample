@@ -1,0 +1,1 @@
+[{% for host in groups[consul_servers_group] %}"{{ hostvars[host].private_ipv4 }}:8300"{% if not loop.last %}, {% endif %}{% endfor %}]

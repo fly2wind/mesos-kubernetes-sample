@@ -1,17 +1,42 @@
 ---
 - hosts: all
-  sudo: true
-  gather_facts: true
+  become: true
+  gather_facts: yes
+  pre_tasks:
+    - name: set vagrant ip addresses in inventory
+      set_fact:
+        public_ipv4: "{{ ansible_eth1.ipv4.address }}"
+        private_ipv4: "{{ ansible_eth1.ipv4.address }}"
+  vars:
+    docker_opts: "--registry-mirror=http://192.168.99.2:5000 --insecure-registry=192.168.99.0/24"
   roles:
     - common
-
-
-- hosts: masters
-  roles:
+    - consul
+    - dnsmasq
     - docker
-    - master
 
-- hosts: slaves
+- hosts: role=edge
+  become: true
+  gather_facts: no
   roles:
-    - docker
-    - minion
+
+- hosts: role=control
+  become: true
+  gather_facts: no
+  vars:
+    mesos_mode: leader
+  roles:
+    - zookeeper
+    - mesos
+    - etcd
+    - influxdb
+    - kubernetes
+
+- hosts: role=worker
+  become: true
+  gather_facts: no
+  vars:
+    mesos_mode: follower
+  roles:
+    - mesos
+    - kubernetes

@@ -1,0 +1,51 @@
+---
+kube_masters_group: role=control
+kube_minions_group: role=worker
+
+# The version of software to install for Kubernetes.
+kube_version: v1.1.3
+
+# Kubernetes cluster name, also will be used as DNS domain
+cluster_name: cluster.local
+
+kube_mesos_master: "zk://{% for host in groups[zookeeper_servers_group] %}{{ hostvars[host].private_ipv4 }}{% if not loop.last %},{% endif %}{% endfor %}:{{ mesos_zk_port }}/{{ mesos_zk_chroot }}"
+
+kube_dns_domain: kube.local
+
+kube_dns_server: "10.10.10.10"
+
+# Kubernetes internal network for services, unused block of space.
+kube_service_addresses: 10.10.10.0/24
+
+kube_mode: minion 
+
+# Users to create for basic auth in Kubernetes API via HTTP
+kube_users:
+  kube:
+    pass: kube
+    role: admin
+  root:
+    pass: admin
+    role: admin
+
+
+kube_config_dir: /etc/kubernetes
+kube_script_dir: /srv/kubernetes
+# This is where all the cert scripts and certs will be located
+kube_certs_dir: "{{ kube_config_dir }}/certs"
+# This is where to save basic auth file
+kube_users_dir: "{{ kube_config_dir }}/users"
+# This is where all of the bearer tokens will be stored
+kube_tokens_dir: "{{ kube_config_dir }}/tokens"
+# This is where you can drop yaml/json files and the kubelet will run those pods on startup
+kube_manifests_dir: "{{ kube_config_dir }}/manifests"
+# This is where manifests for podmaster will be stored
+kube_podmaster_dir: "{{ kube_script_dir }}/manifests"
+
+
+kube_addons_ui: true
+kube_addons_dns: true
+kube_addons_heapster: true
+kube_addons_grafana: true
+
+

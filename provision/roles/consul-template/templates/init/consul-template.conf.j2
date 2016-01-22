@@ -1,0 +1,20 @@
+description "Consul-Template"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on runlevel [06]
+
+respawn
+respawn limit 10 10
+
+kill timeout 10
+
+pre-start script
+  test -x /usr/sbin/consul-template || { stop; exit 0; }
+end script
+
+script
+  if [ -f /etc/default/consul-template ]; then
+    . /etc/default/consul-template
+  fi
+  exec /usr/bin/consul-template -config=/etc/consul-template/config.d ${CONSUL_TEMPLATE_OPTIONS}
+end script

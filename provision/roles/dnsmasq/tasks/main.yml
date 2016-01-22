@@ -1,0 +1,19 @@
+---
+- name: install dnsmasq package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - dnsmasq
+
+- name: generate dnsmasq config
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "conf/10-consul.j2",     dest: "/etc/dnsmasq.d/10-consul"     }
+    - { src: "conf/20-kubernetes.j2", dest: "/etc/dnsmasq.d/20-kubernetes" }
+  notify:
+    - restart dnsmasq
+
+- name: register dnsmasq service
+  service: name=dnsmasq state=started
+
+- name: add dnsmasq to /etc/resolv.conf
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf owner=root group=root mode=0644

@@ -1,2 +1,2 @@
 ---
-docker_filesystem: aufs
+docker_opts: --registry-mirror=http://fly2wind.m.alauda.cn

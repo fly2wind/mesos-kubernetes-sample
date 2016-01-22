@@ -1,0 +1,41 @@
+---
+- name: add apt key
+  apt_key: id=E56151BF keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb http://repos.mesosphere.com/ubuntu trusty main' state=present
+
+- name: install mesos package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - mesos
+
+#- name: configure mesos 
+#  template: src=conf/{{ item }}.j2 dest=/etc/mesos/{{ item }} owner=root group=root mode=0644
+#  with_items:
+#    - zk
+#    - ip
+#    - hostname
+#    - cluster
+
+- name: configure mesos-master config
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { content: "{{ private_ipv4 }}",                                                dest: "/etc/mesos/ip" }
+    - { content: "{{ inventory_hostname }}.node.{{ serv_dns_domain }}",               dest: "/etc/mesos/hostname" }
+    - { content: "{{ private_ipv4 }}",                                                dest: "/etc/mesos/advertise_ip" }
+    - { content: "zk://{{ mesos_zk_dns }}:{{ mesos_zk_port }}/{{ mesos_zk_chroot }}", dest: "/etc/mesos/zk" }
+
+- name: disable mesos leader
+  service: name=mesos-master enabled=no
+  when: mesos_mode == "follower"
+
+- name: disable mesos follower
+  service: name=mesos-slave enabled=no
+  when: mesos_mode == "leader"
+
+- include: master.yml
+  when: mesos_mode == "leader" or mesos_mode == "mixed"
+
+- include: slave.yml
+  when: mesos_mode == "follower" or mesos_mode == "mixed"

@@ -1,0 +1,19 @@
+{
+  "datacenter": "{{ cluster_datacenter }}",
+  "domain": "{{ serv_dns_domain }}",
+  "node_name": "{{ inventory_hostname }}",
+  "log_level": "INFO",
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "advertise_addr": "{{ consul_advertise }}",
+  "start_join": [ {{ consul_start_join }} ],
+  "rejoin_after_leave": true,
+  "retry_join": [ {{ consul_retry_join }} ],
+  "retry_interval": "30s",
+{% if consul_server %}
+  "server": true,
+  "bootstrap_expect": {{ consul_bootstrap_expect }},
+  "ui_dir": "/usr/share/consul/web-ui",
+{% endif %}
+  "data_dir": "/var/lib/consul"
+}

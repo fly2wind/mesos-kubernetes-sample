@@ -1,0 +1,3 @@
+---
+kube_masters_group: role=control
+consul_servers_group: role=control

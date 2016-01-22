@@ -1,0 +1,17 @@
+---
+- name: configure mesos-master default
+  template: src=default/mesos-master.j2 dest=/etc/default/mesos-master owner=root group=root mode=0644
+  notify:
+    - restart mesos-master
+
+- name: configure mesos-master config
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { content: "{{ cluster_name }}",                               dest: "/etc/mesos-master/cluster"  }
+    - { content: "{{ groups[mesos_leaders_group]|count // 2 + 1 }}", dest: "/etc/mesos-master/quorum"   }
+    - { content: "/var/lib/mesos",                                   dest: "/etc/mesos-master/work_dir" }
+  notify: 
+    - restart mesos-master
+
+- name: register mesos-master service
+  service: name=mesos-master enabled=yes state=started

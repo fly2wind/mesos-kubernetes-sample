@@ -1,0 +1,11 @@
+---
+mesos_leaders_group: role=control
+
+mesos_zk_dns: "zookeeper.service.{{ serv_dns_domain }}"
+mesos_zk_port: 2181
+mesos_zk_chroot: mesos
+
+mesos_mode: follower 
+mesos_cluster: dc1
+mesos_resources: ports(*):[4000-5000, 7000-8000, 9000-10000, 25000-26000, 31000-32000]
+mesos_executor_registration_timeout: 10mins

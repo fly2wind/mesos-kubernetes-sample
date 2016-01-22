@@ -1,0 +1,11 @@
+---
+- name: restart kubelet
+  service: name=kubelet state=restarted
+
+- name: reload podmaster
+  command: "{{ item }}"
+  with_items:
+    - service kubelet stop
+    - rm -rf /etc/kubernetes/manifests/kube-scheduler.yml
+    - rm -rf /etc/kubernetes/manifests/kube-controller-manager.yml
+    - service kubelet start

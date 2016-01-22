@@ -1,0 +1,13 @@
+---
+- name: restart mesos-master
+  service: name=mesos-master state=restarted
+
+- name: restart mesos-slave
+  service: name=mesos-slave state=restarted
+
+- name: remove mesos-slave metadata
+  command: "{{ item }}"
+  with_items:
+    - service mesos-slave stop
+    - rm -rf /tmp/mesos/meta/slaves/latest
+    - service mesos-slave start

@@ -1,0 +1,1 @@
+INFLUXD_OPTS="-hostname {{ inventory_hostname }}{% if groups[influxdb_servers_group]|count > 1 %} -join {% for host in groups[influxdb_servers_group]|sort %}{{ hostvars[host].inventory_hostname }}:{{ influxdb_meta_port }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}"

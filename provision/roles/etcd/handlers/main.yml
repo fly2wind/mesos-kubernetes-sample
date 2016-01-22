@@ -1,0 +1,6 @@
+---
+- name: restart etcd
+  service: name=etcd state=restarted
+
+- name: restart skydns
+  service: name=skydns state=restarted

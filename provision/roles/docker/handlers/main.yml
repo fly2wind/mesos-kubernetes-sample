@@ -2,5 +2,8 @@
 - name: restart docker
   service: name=docker state=restarted
 
+- name: reload consul
+  command: consul reload
+
 - name: update grub
   command: /usr/sbin/update-grub

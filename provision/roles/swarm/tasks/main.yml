@@ -1,0 +1,13 @@
+---
+- name: docker run swarm
+  docker:
+    name:  etcd
+    image: swarm:1.0.1
+    state: reloaded
+    ports:
+      - 2376:2375
+    volumes:
+      - /var/lib/swarm:/.swarm
+    command: "manage {{ swarm_discovery }}"
+    restart_policy: always
+    restart_policy_retry: 5

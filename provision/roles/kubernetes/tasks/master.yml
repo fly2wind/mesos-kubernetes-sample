@@ -1,0 +1,80 @@
+---
+- name: install kubernetes-master package
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - km
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+    - kubectl
+    - kubelet
+
+- name: install kubernetes-master certs
+  synchronize: src="{{ kube_certs_dir }}" dest="{{ kube_config_dir }}" delete=true use_ssh_args=true
+  when: inventory_hostname != groups[kube_masters_group][0]
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+
+- name: load kubernetes-master tokens
+  slurp: src="{{ kube_tokens_dir }}/{{ item }}-{{ inventory_hostname }}.token"
+  with_items:
+    - "system:controller_manager"
+    - "system:scheduler"
+    - "system:kubectl"
+  register: tokens
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+
+- name: register kubernetes-master facts
+  set_fact:
+    kube_controller_manager_token: "{{ tokens.results[0].content|b64decode }}"
+    kube_scheduler_token:          "{{ tokens.results[1].content|b64decode }}"
+    kube_kubectl_token:            "{{ tokens.results[2].content|b64decode }}"
+
+- name: generate kubernetes-master config files
+  template: src="conf/{{ item.src }}" dest="{{ kube_config_dir }}/{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "kube-controller-manager.kubeconfig.j2", dest: "kube-controller-manager.kubeconfig" }
+    - { src: "kube-scheduler.kubeconfig.j2",          dest: "kube-scheduler.kubeconfig"          }
+    - { src: "kube-kubectl.kubeconfig.j2",            dest: "kube-kubectl.kubeconfig"            }
+  notify:
+    - restart kubelet
+
+- name: generate kubernetes-master auth files
+  lineinfile: line="{{ item.value.pass }},{{ item.key }},{{ item.value.role }}" dest="{{ kube_users_dir }}/known_users.csv" create=yes
+  with_dict: "{{ kube_users }}"
+  notify:
+    - restart kubelet
+
+- name: configure kubernetes-master config
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "conf/cloud.cfg.j2",   dest: "/etc/kubernetes/cloud.cfg" }
+  notify:
+    - restart kubelet
+
+- name: configure kubernetes-master upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "default/kubelet.j2",   dest: "/etc/default/kubelet"   }
+    - { src: "init/kubelet.conf.j2", dest: "/etc/init/kubelet.conf" }
+  notify:
+    - restart kubelet
+
+- name: generate kubernetes-master manifests
+  template: src="conf/manifests/{{ item }}.yml" dest="/etc/kubernetes/manifests/{{ item }}.yml" owner=root group=root mode=0644
+  with_items:
+    - kube-system
+    - kube-apiserver
+    - kube-podmaster
+  notify:
+    - restart kubelet
+
+- name: generate kubernetes-master manifests
+  template: src="conf/manifests/{{ item }}.yml" dest="/srv/kubernetes/manifests/{{ item }}.yml" owner=root group=root mode=0644
+  with_items:
+    - kube-scheduler
+    - kube-controller-manager
+  notify:
+    - reload podmaster
+
+- name: register kubelet service
+  service: name=kubelet state=started

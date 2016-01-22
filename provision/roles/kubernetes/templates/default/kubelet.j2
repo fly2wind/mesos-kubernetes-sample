@@ -1,0 +1,9 @@
+# Kubelet Upstart and SysVinit configuration file
+
+# Customize kubelet binary location 
+# KUBELET="/usr/bin/kubelet"
+
+# Use KUBELET_OPTS to modify the start/restart options
+KUBELET_OPTS="--api-servers=http://localhost:8080 --register-node=false --hostname-override={{ ansible_hostname }} --allow-privileged=true --config=/etc/kubernetes/manifests --enable-debugging-handlers=true"
+
+# Add more envionrment settings used by kubelet here

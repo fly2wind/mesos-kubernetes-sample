@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-apiserver
+    image: mesosphere/kubernetes-mesos
+    command:
+    - km
+    - apiserver
+    - --bind-address=0.0.0.0
+    - --secure-port=6443
+    - --insecure-bind-address=0.0.0.0
+    - --insecure-port=8080
+    - --advertise-address={{ private_ipv4 }}
+    - --etcd-servers={% for host in groups[etcd_servers_group] %}{{ etcd_client_scheme }}://{{ hostvars[host].private_ipv4 }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %}
+
+    - --allow-privileged=true
+    - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
+    - --authorization-mode=AlwaysAllow
+    - --token-auth-file={{ kube_tokens_dir }}/known_tokens.csv
+    - --basic-auth-file={{ kube_users_dir }}/known_users.csv
+    - --service-account-key-file=/{{ kube_certs_dir }}/server.key
+    - --service-cluster-ip-range={{ kube_service_addresses }}
+    - --service-node-port-range=30000-32767
+    - --cloud-provider=mesos
+    - --cloud-config=/etc/kubernetes/cloud.cfg
+    - --cluster-name=kubernetes
+    - --client-ca-file={{ kube_certs_dir }}/ca.crt
+    - --tls-cert-file={{ kube_certs_dir }}/server.crt
+    - --tls-private-key-file={{ kube_certs_dir }}/server.key
+    - --v=1
+    ports:
+    - containerPort: 443
+      hostPort: 443
+      protocol: TCP
+      name: https
+    - containerPort: 8080
+      hostPort: 8080
+      protocol: TCP
+      name: local
+    volumeMounts:
+    - mountPath: /etc/kubernetes/
+      name: etc-kubernetes
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/
+    name: etc-kubernetes

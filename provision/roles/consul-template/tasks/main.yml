@@ -1,0 +1,29 @@
+---
+- name: install consul-template packages
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - consul-template
+
+- name: create consul-template directory
+  file: path="{{ item.path }}" state=directory owner=root group=root mode="{{ item.mode | default('0644') }}"
+  with_items:
+    - { path: "/etc/consul-template" }
+    - { path: "/etc/consul-template/config.d" }
+    - { path: "/etc/consul-template/templates" }
+    - { path: "/var/lib/consul-template", mode: "0755" }
+
+- name: configure consul-template upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "default/consul-template.j2",   dest: "/etc/default/consul-template"   }
+    - { src: "init/consul-template.conf.j2", dest: "/etc/init/consul-template.conf" }
+  notify:
+    - restart consul-template
+
+- name: configure consul config
+  template: src=conf/consul-template.cfg.j2 dest=/etc/consul-template/config.d/consul-template.cfg owner=root group=root mode=0644
+  notify:
+    - restart consul-template
+
+- name: register consul-template service
+  service: name=consul-template state=started

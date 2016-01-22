@@ -1,0 +1,24 @@
+---
+- name: configure mesos-slave default
+  template: src=default/mesos-slave.j2 dest=/etc/default/mesos-slave owner=root group=root mode=0644
+  notify:
+    - restart mesos-slave
+
+- name: configure mesos-slave config
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { content: "docker,mesos",                              dest: "/etc/mesos-slave/containerizers"                }
+    - { content: "{{ mesos_executor_registration_timeout }}", dest: "/etc/mesos-slave/executor_registration_timeout" }
+  notify: 
+    - restart mesos-slave
+
+- name: configure mesos-slave metadata
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { content: "{{ mesos_resources }}",            dest: "/etc/mesos-slave/resources"  }
+    - { content: "node_id:{{ inventory_hostname }}", dest: "/etc/mesos-slave/attributes" }
+  notify: 
+    - remove mesos-slave metadata
+
+- name: register mesos-slave service
+  service: name=mesos-slave enabled=yes state=started

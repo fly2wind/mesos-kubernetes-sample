@@ -1,0 +1,24 @@
+---
+- name: install kubernetes-minion package
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - kube-proxy
+
+- name: load kubernetes-minion tokens
+  slurp: src="{{ kube_tokens_dir }}/{{ item }}-{{ inventory_hostname }}.token"
+  with_items:
+    - "system:kubelet"
+    - "system:proxy"
+  register: tokens
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+
+- name: register kubernetes-minion facts
+  set_fact:
+    kube_kubelet_token: "{{ tokens.results[0].content|b64decode }}"
+    kube_proxy_token:   "{{ tokens.results[1].content|b64decode }}"
+
+- name: generate kubernetes-minion config files
+  template: src="conf/{{ item.src }}" dest="{{ kube_config_dir }}/{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "kube-kubelet.kubeconfig.j2", dest: "kube-kubelet.kubeconfig" }
+    - { src: "kube-proxy.kubeconfig.j2",   dest: "kube-proxy.kubeconfig" }

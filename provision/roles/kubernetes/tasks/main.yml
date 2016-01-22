@@ -1,0 +1,52 @@
+---
+- name: prepare kubernetes directory
+  file: path="{{ item }}" state=directory owner=root group=root mode=0644
+  with_items:
+    - "{{ kube_config_dir }}"
+    - "{{ kube_certs_dir }}"
+    - "{{ kube_users_dir }}"
+    - "{{ kube_tokens_dir }}"
+    - "{{ kube_manifests_dir }}"
+    - "{{ kube_script_dir }}"
+    - "{{ kube_podmaster_dir }}"
+
+- include: secrets/certs.yml
+  run_once: true
+  when: inventory_hostname == groups[kube_masters_group][0]
+
+- include: secrets/tokens.yml
+  run_once: true
+  when: inventory_hostname == groups[kube_masters_group][0]
+
+- name: load kubernetes ca certificate
+  slurp: src="{{ kube_certs_dir }}/ca.crt"
+  register: ca_cert
+  run_once: true
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+
+- name: register kubernetes facts
+  set_fact:
+    kube_ca_cert: "{{ ca_cert.content|b64decode }}"
+
+- name: write kubernetes ca certificate
+  copy: content="{{ kube_ca_cert }}" dest="{{ kube_certs_dir }}/ca.crt"
+  
+- include: master.yml
+  when: kube_mode == "master" or kube_mode == "mixed"
+
+- include: minion.yml
+  when: kube_mode == "minion" or kube_mode == "mixed"
+
+- include: addons/main.yml
+  run_once: true
+  when: inventory_hostname == groups[kube_masters_group][0]
+
+
+
+
+
+
+
+
+
+
