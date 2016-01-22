@@ -2,10 +2,6 @@
 - name: install kubernetes-master package
   copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
   with_items:
-    - km
-    - kube-apiserver
-    - kube-controller-manager
-    - kube-scheduler
     - kubectl
     - kubelet
 
