@@ -1,0 +1,11 @@
+# Flanneld Upstart and SysVinit configuration file
+
+# Customize etcd location 
+# FLANNELD="/usr/bin/flanneld"
+
+# Use FLANNELD_OPTS to modify the start/restart options
+FLANNELD_OPTS="--public-ip={{ private_ipv4 }}
+               --etcd-endpoints={{ flanneld_etcd_endpoints }}                                                               
+               --etcd-prefix=/{{ cluster_name }}/network                                                                       
+               --iface={{ ansible_default_ipv4.interface }}                          
+              "

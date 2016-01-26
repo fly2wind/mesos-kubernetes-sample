@@ -8,7 +8,7 @@
 - name: install mesos package
   apt: name="{{ item }}" install_recommends=no state=present
   with_items:
-    - mesos
+    - mesos=0.25.0-0.2.70.ubuntu1404
 
 #- name: configure mesos 
 #  template: src=conf/{{ item }}.j2 dest=/etc/mesos/{{ item }} owner=root group=root mode=0644

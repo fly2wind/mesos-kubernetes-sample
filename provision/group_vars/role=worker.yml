@@ -1,3 +1,4 @@
 ---
 consul_server: false
 kube_mode: minion
+flanneld_mode: "client"

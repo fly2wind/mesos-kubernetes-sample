@@ -1,13 +1,17 @@
 # Etcd Upstart and SysVinit configuration file
 
-ETCD_NAME={{ inventory_hostname }}
-ETCD_DATA_DIR=/var/lib/etcd
-ETCD_LISTEN_CLIENT_URLS={{ etcd_client_scheme }}://0.0.0.0:{{ etcd_client_port }}
-ETCD_LISTEN_PEER_URLS={{ etcd_peer_scheme }}://0.0.0.0:{{ etcd_peer_port }}
+# Customize etcd location 
+# ETCD="/usr/bin/etcd"
 
-# Cluster
-ETCD_ADVERTISE_CLIENT_URLS={{ etcd_client_scheme }}://{{ private_ipv4 }}:{{ etcd_client_port }}
-ETCD_INITIAL_ADVERTISE_PEER_URLS={{ etcd_peer_scheme }}://{{ private_ipv4 }}:{{ etcd_peer_port }}
-ETCD_INITIAL_CLUSTER_STATE={{ etcd_initial_cluster_state }}
-ETCD_INITIAL_CLUSTER_TOKEN={{ etcd_initial_cluster_token }}
-ETCD_INITIAL_CLUSTER={% for host in groups[etcd_servers_group] %}{{ hostvars[host].inventory_hostname }}={{ etcd_peer_scheme }}://{{ hostvars[host].private_ipv4 }}:{{ etcd_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}
+# Use ETCD_OPTS to modify the start/restart options
+ETCD_OPTS="--name={{ inventory_hostname }}
+           --proxy={{ etcd_proxy }}                                                                
+           --data-dir={{ etcd_data_dir }}                                                                       
+           --listen-peer-urls={{ etcd_peer_scheme }}://0.0.0.0:{{ etcd_peer_port }}                       
+           --listen-client-urls={{ etcd_client_scheme }}://0.0.0.0:{{ etcd_client_port }}                                 
+           --initial-advertise-peer-urls={{ etcd_peer_scheme }}://{{ private_ipv4 }}:{{ etcd_peer_port }} 
+           --initial-cluster={{ etcd_initial_cluster }}                                                   
+           --initial-cluster-state={{ etcd_initial_cluster_state }}                                       
+           --initial-cluster-token={{ etcd_initial_cluster_token }}                                       
+           --advertise-client-urls={{ etcd_client_scheme }}://{{ private_ipv4 }}:{{ etcd_client_port }}   
+           "

@@ -1,0 +1,6 @@
+---
+- name: restart elasticsearch
+  service: name=elasticsearch state=restarted
+
+- name: reload consul
+  command: consul reload

@@ -1,0 +1,7 @@
+---
+traefik_servers_group: role=edge
+
+
+traefik_package: "https://github.com/emilevauge/traefik/releases/download/v1.0.alpha.392/traefik"
+
+traefik_config_dir: /etc/traefik

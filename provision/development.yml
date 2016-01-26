@@ -11,14 +11,18 @@
     docker_opts: "--registry-mirror=http://192.168.99.2:5000 --insecure-registry=192.168.99.0/24"
   roles:
     - common
+    - java
     - consul
     - dnsmasq
     - docker
+    - { role: flanneld, when: cluster_network == 'flanneld' }
 
 - hosts: role=edge
   become: true
   gather_facts: no
   roles:
+    - etcd
+    - traefik
 
 - hosts: role=control
   become: true
@@ -28,6 +32,7 @@
   roles:
     - zookeeper
     - mesos
+    - marathon
     - etcd
     - influxdb
     - kubernetes

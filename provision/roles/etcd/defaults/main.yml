@@ -1,6 +1,12 @@
 ---
 etcd_servers_group: role=control
 
+etcd_proxy: "off"
+
+etcd_config_dir: /etc/etcd
+etcd_script_dir: /usr/libexec/etcd
+etcd_data_dir:   /var/lib/etcd
+
 etcd_peer_port: 2380
 etcd_client_port: 2379
 etcd_peer_scheme: http

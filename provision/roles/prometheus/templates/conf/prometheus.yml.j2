@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    target_groups:
+      - targets:
+        - {{ inventory_hostname }}:9090
+  - job_name: 'service'
+    consul_sd_configs:
+      - server: '{{ inventory_hostname }}:8500'
+        services: ['etcd']

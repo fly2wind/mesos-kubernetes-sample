@@ -8,14 +8,14 @@
   register: kube_grafana_svc_def
 
 - name: Kube-GRAFANA | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-grafana-rc.yml" state="{{ kube_grafana_rc_def.changed | ternary('latest','present') }}"
+  kube: filename="/etc/kubernetes/manifests/kube-grafana-rc.yml" state=latest
   when: kube_addons_grafana
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true
 
 - name: Kube-GRAFANA | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-grafana-svc.yml" state="{{ kube_grafana_svc_def.changed | ternary('latest','present') }}"
+  kube: filename="/etc/kubernetes/manifests/kube-grafana-svc.yml" state=latest
   when: kube_addons_grafana
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes

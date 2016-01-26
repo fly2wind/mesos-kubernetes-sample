@@ -1,0 +1,24 @@
+---
+- name: add apt key
+  apt_key: id=D88E42B4 keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb http://packages.elastic.co/logstash/2.0/debian stable main' state=present
+
+- name: install logstash package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - logstash
+
+#- name: generate logstash config
+#  template: src=conf/zoo.cfg.j2 dest=/etc/logstash/conf/zoo.cfg owner=root group=root mode=0644
+#  notify:
+#    - restart logstash
+
+#- name: remove logstash sysvinit
+#  file: path=/etc/init.d/logstash state=absent
+#  notify:
+#    - restart logstash
+
+#- name: register logstash service
+#  service: name=logstash state=started

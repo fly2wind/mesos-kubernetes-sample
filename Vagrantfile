@@ -11,8 +11,8 @@ cluster = {
   "master-2" => { :ip => "10.245.5.4", :cpus => 1, :memory => 1024 },
   "master-3" => { :ip => "10.245.5.5", :cpus => 1, :memory => 1024 },
   "slave-1"  => { :ip => "10.245.5.6", :cpus => 1, :memory => 1024 },
-  "slave-2"  => { :ip => "10.245.5.7", :cpus => 1, :memory => 1024 },
-  "slave-3"  => { :ip => "10.245.5.8", :cpus => 1, :memory => 1024 },
+  "slave-2"  => { :ip => "10.245.5.7", :cpus => 2, :memory => 2048 },
+  "slave-3"  => { :ip => "10.245.5.8", :cpus => 4, :memory => 4096 },
 }
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|

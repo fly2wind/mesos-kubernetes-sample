@@ -1,0 +1,35 @@
+---
+- name: install marathon package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - marathon
+
+- name: prepare marathon directory
+  file: path="{{ item }}" state=directory owner=root group=root mode=0644
+  with_items:
+    - "/etc/marathon"
+    - "/etc/marathon/conf"
+
+- name: configure marathon config
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { content: "{{ inventory_hostname }}",                             dest: "/etc/marathon/conf/hostname" }
+    - { content: "zk://{{ mesos_zk_dns }}:{{ mesos_zk_port }}/marathon", dest: "/etc/marathon/conf/zk" }
+    - { content: "zk://{{ mesos_zk_dns }}:{{ mesos_zk_port }}/mesos",    dest: "/etc/marathon/conf/master" }
+    - { content: "9080",                                                 dest: "/etc/marathon/conf/http_port" }
+    - { content: "9443",                                                 dest: "/etc/marathon/conf/https_port" }
+  notify: 
+    - restart marathon
+
+- name: configure marathon default
+  template: src=default/marathon.j2 dest=/etc/default/marathon owner=root group=root mode=0644
+  notify:
+    - restart marathon
+
+- name: configure marathon upstart
+  template: src=init/marathon.conf.j2 dest=/etc/init/marathon.conf owner=root group=root mode=0644
+  notify:
+    - restart marathon
+
+- name: register marathon service
+  service: name=marathon state=started

@@ -1,0 +1,5 @@
+---
+elasticsearch_servers_group: role=control
+
+
+elasticsearch_runtime: mesos

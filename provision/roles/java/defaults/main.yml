@@ -1,0 +1,6 @@
+---
+java_version: 8
+
+java_home: "/usr/lib/jvm/java-{{ java_version }}-oracle"
+
+java_cache_valid_time: 3600

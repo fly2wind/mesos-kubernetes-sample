@@ -1,4 +1,10 @@
 ---
+# ansible groups for service configuration
+etcd_servers_group: role=control
+
+
+
+
 # cluster dns
 cluster_dns: true
 # cluster name
@@ -6,6 +12,9 @@ cluster_name: cluster
 
 # cluster datacenter
 cluster_datacenter: dc1
+
+# cluster network
+cluster_network: flanneld
 
 #
 host_dns: true
@@ -21,3 +30,14 @@ serv_dns_domain: serv.local
 kube_dns: true
 # kubernetes domain
 kube_dns_domain: kube.local
+
+# network
+overlay_network_subnet: 172.16.0.0
+overlay_network_prefix: 16
+overlay_network_host_prefix: 24
+
+# etcd
+etcd_peer_port: 2380
+etcd_client_port: 2379
+etcd_peer_scheme: http
+etcd_client_scheme: http

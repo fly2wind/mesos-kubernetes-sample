@@ -10,12 +10,12 @@ cluster_name: cluster.local
 
 kube_mesos_master: "zk://{% for host in groups[zookeeper_servers_group] %}{{ hostvars[host].private_ipv4 }}{% if not loop.last %},{% endif %}{% endfor %}:{{ mesos_zk_port }}/{{ mesos_zk_chroot }}"
 
-kube_dns_domain: kube.local
-
-kube_dns_server: "10.10.10.10"
-
 # Kubernetes internal network for services, unused block of space.
 kube_service_addresses: 10.10.10.0/24
+
+kube_dns_domain: kube.local
+
+kube_dns_server: "{{ kube_service_addresses|ipaddr('net')|ipaddr(10)|ipaddr('address') }}"
 
 kube_mode: minion 
 

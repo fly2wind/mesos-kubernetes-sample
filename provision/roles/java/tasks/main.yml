@@ -1,0 +1,16 @@
+---
+- name: add apt key
+  apt_key: id=EEA14886 keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' state=present
+
+
+- name: auto-accept java agreement
+  debconf: name="oracle-java8-installer" question="shared/accepted-oracle-license-v1-1" vtype="select" value="true"
+    
+- name: install java package
+  apt: name="{{ item }}" install_recommends=no cache_valid_time={{ java_cache_valid_time }} state=present
+  with_items:
+    - oracle-java8-installer
+

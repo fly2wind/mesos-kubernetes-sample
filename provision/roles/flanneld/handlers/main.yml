@@ -1,0 +1,25 @@
+---
+- name: restart flanneld
+  service: name=flanneld state=restarted
+
+- name: reconfig docker
+  command: /bin/true
+  notify:
+    - stop docker
+    - delete docker0
+    - start docker
+
+- name: stop docker
+  service: name=docker state=stopped
+
+- name: delete docker0
+  command: "ip link delete docker0"
+  ignore_errors: yes
+
+- name: start docker
+  service: name=docker state=started
+
+- name: reload consul
+  command: consul reload
+
+

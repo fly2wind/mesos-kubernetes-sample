@@ -1,31 +1,27 @@
-description "Docker Container:Etcd"
+description "etcd service"
 
-start on (filesystem and started docker)
-stop on runlevel [!2345] or stopping docker
+start on (net-device-up and local-filesystems and runlevel [2345])
+stop on runlevel [!2345]
 
 respawn
+respawn limit 10 5
 
 pre-start script
-  mkdir -p /var/run/docker
-  # Wait for docker to finish starting up first.
-  FILE=/var/run/docker.sock
-  while [ ! -e $FILE ] ; do
-    sleep 1
-  done
-end script
-
-post-start script
-  docker rm -f etcd
+  ETCD=/usr/bin/$UPSTART_JOB
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  if [ -f $ETCD ]; then
+    exit 0
+  fi
+  exit 22
 end script
 
 script
-  exec docker run --rm --name=etcd --env-file=/etc/default/etcd --publish=2379:2379 --publish=2380:2380 --volume=/var/lib/etcd:/var/lib/etcd baselibrary/etcd:2.2
-end script
-
-pre-stop script
-  /usr/bin/docker stop etcd
-end script
-
-post-stop script
-  /usr/bin/docker rm --force etcd
+  ETCD=/usr/bin/$UPSTART_JOB
+  ETCD_OPTS=""
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  exec "$ETCD" $ETCD_OPTS
 end script

@@ -1,0 +1,46 @@
+---
+- name: prepare flanneld directory
+  file: path="{{ item }}" state=directory owner=root group=root mode=0644
+  with_items:
+    - "{{ flanneld_config_dir }}"
+    - "{{ flanneld_script_dir }}"
+    - "{{ flanneld_data_dir }}"
+
+- name: configure flannel in etcd
+  command: 'etcdctl --no-sync --peers={{ etcd_client_scheme }}://{{ groups[etcd_servers_group][0] }}:{{ etcd_client_port }} set /{{ cluster_name }}/network/config ''{ "Network": "{{ overlay_network_subnet }}/{{ overlay_network_prefix }}", "SubnetLen": {{ overlay_network_host_prefix }}, "Backend": { "Type": "{{ flanneld_backend_type }}" } }'''
+  run_once: true
+  changed_when: false
+  delegate_to: "{{ groups[etcd_servers_group][0] }}"
+
+- name: install flanneld package
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - flanneld
+
+- name: generate flanneld config
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "default/flanneld.j2",   dest: "/etc/default/flanneld"   }
+    - { src: "conf/flanneld.conf.j2", dest: "/etc/flanneld/flanneld.conf" }
+  notify:
+    - restart flanneld
+
+- name: generate flanneld upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "init/flanneld.conf.j2", dest: "/etc/init/flanneld.conf" }
+  notify:
+    - restart flanneld
+
+- name: register flanneld service
+  service: name=flanneld state=started
+  notify:
+    - reconfig docker
+
+
+
+#- name: register etcd service with the consul agent
+#consul: service_name=flanneld service_port={{ etcd_client_port }} script="etcdctl cluster-health" interval=60s timeout=2s
+
+##- include: skydns.yml
+##  when: cluster_dns is defined

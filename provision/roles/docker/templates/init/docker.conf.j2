@@ -39,6 +39,10 @@ script
   if [ -f /etc/default/$UPSTART_JOB ]; then
     . /etc/default/$UPSTART_JOB
   fi
+  if [ -f /run/flannel/subnet.env ]; then
+    . /run/flannel/subnet.env
+    DOCKER_OPTS="$DOCKER_OPTS --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU}"
+  fi
   exec "$DOCKER" daemon $DOCKER_OPTS
 end script
 

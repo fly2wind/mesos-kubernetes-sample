@@ -1,3 +1,4 @@
 ---
 consul_server: true
 kube_mode: master
+flanneld_mode: "server"

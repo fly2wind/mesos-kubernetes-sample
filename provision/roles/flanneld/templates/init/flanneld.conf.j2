@@ -1,0 +1,27 @@
+description "flanneld service"
+
+start on (net-device-up and local-filesystems and runlevel [2345])
+stop on runlevel [!2345]
+
+respawn
+respawn limit 10 5
+
+pre-start script
+  FLANNELD=/usr/bin/$UPSTART_JOB
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  if [ -f $FLANNELD ]; then
+    exit 0
+  fi
+  exit 22
+end script
+
+script
+  FLANNELD=/usr/bin/$UPSTART_JOB
+  FLANNELD_OPTS=""
+  if [ -f /etc/default/$UPSTART_JOB ]; then
+    . /etc/default/$UPSTART_JOB
+  fi
+  exec "$FLANNELD" $FLANNELD_OPTS
+end script

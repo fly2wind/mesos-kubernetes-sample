@@ -1,0 +1,28 @@
+---
+- name: install traefik package
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - traefik
+
+- name: prepare traefik directory
+  file: path="{{ item }}" state=directory owner=root group=root mode=0644
+  with_items:
+    - "{{ traefik_config_dir }}"
+
+- name: generate traefik config
+  template: src=conf/traefik.toml.j2 dest=/etc/traefik/traefik.toml owner=root group=root mode=0644
+  notify:
+    - restart traefik
+
+- name: configure traefik default
+  template: src=default/traefik.j2 dest=/etc/default/traefik owner=root group=root mode=0644
+  notify:
+    - restart traefik
+
+- name: configure traefik upstart
+  template: src=init/traefik.conf.j2 dest=/etc/init/traefik.conf owner=root group=root mode=0644
+  notify:
+    - restart traefik
+
+- name: register traefik service
+  service: name=traefik state=started

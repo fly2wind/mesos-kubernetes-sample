@@ -1,0 +1,24 @@
+---
+- name: add apt key
+  apt_key: id=D88E42B4 keyserver=keyserver.ubuntu.com state=present
+
+- name: add apt repository
+  apt_repository: repo='deb http://packages.elastic.co/elasticsearch/2.x/debian stable main' state=present
+
+- name: install elasticsearch package
+  apt: name="{{ item }}" install_recommends=no state=present
+  with_items:
+    - elasticsearch
+
+- name: generate elasticsearch config
+  template: src=conf/elasticsearch.yml.j2 dest=/etc/elasticsearch/elasticsearch.yml owner=root group=root mode=0644
+  notify:
+    - restart elasticsearch
+
+- name: configure elasticsearch default
+  template: src=default/elasticsearch.j2 dest=/etc/default/elasticsearch owner=root group=root mode=0644
+  notify:
+    - restart elasticsearch
+
+- name: register elasticsearch service
+  service: name=elasticsearch state=started

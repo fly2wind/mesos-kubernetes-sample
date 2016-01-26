@@ -1,0 +1,13 @@
+---
+flanneld_servers_group: role=control
+
+flanneld_mode: "server"
+
+flanneld_config_dir: /etc/flanneld
+flanneld_script_dir: /usr/libexec/flanneld
+flanneld_data_dir:   /var/lib/flanneld
+
+
+flanneld_etcd_endpoints: "{% for host in groups[etcd_servers_group] %}{{ etcd_client_scheme }}://{{ hostvars[host].private_ipv4 }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+
+flanneld_backend_type: 'udp'

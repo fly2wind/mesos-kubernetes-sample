@@ -1,0 +1,7 @@
+---
+prometheus_servers_group: role=control
+
+consul_servers_group: role=control
+
+
+prometheus_config_dir: /etc/prometheus

@@ -8,15 +8,15 @@
   register: kube_dns_svc_def
 
 - name: Kube-DNS | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-dns-rc.yml" state="{{ kube_dns_rc_def.changed | ternary('latest','present') }}"
-  when: kube_addons_dns
+  kube: filename="/etc/kubernetes/manifests/kube-dns-rc.yml" state=latest
+  when: kube_addons_dns.changed
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true
 
 - name: Kube-DNS | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-dns-svc.yml" state="{{ kube_dns_svc_def.changed | ternary('latest','present') }}"
-  when: kube_addons_dns
+  kube: filename="/etc/kubernetes/manifests/kube-dns-svc.yml" state=latest
+  when: kube_addons_dns.changed
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true

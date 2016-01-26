@@ -1,2 +1,3 @@
 ---
 consul_server: false
+etcd_proxy: "on"

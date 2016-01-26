@@ -17,6 +17,7 @@
     - "system:scheduler"
     - "system:kubectl"
   register: tokens
+  run_once: true
   delegate_to: "{{ groups[kube_masters_group][0] }}"
 
 - name: register kubernetes-master facts

@@ -1,8 +1,28 @@
 ---
-- name: configure etcd upstart
+- name: prepare etcd directory
+  file: path="{{ item }}" state=directory owner=root group=root mode=0644
+  with_items:
+    - "{{ etcd_config_dir }}"
+    - "{{ etcd_script_dir }}"
+    - "{{ etcd_data_dir }}"
+
+- name: install etcd package
+  copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
+  with_items:
+    - etcd
+    - etcdctl
+
+- name: generate etcd config
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
   with_items:
     - { src: "default/etcd.j2",   dest: "/etc/default/etcd"   }
+    - { src: "conf/etcd.conf.j2", dest: "/etc/etcd/etcd.conf" }
+  notify:
+    - restart etcd
+
+- name: generate etcd upstart
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
     - { src: "init/etcd.conf.j2", dest: "/etc/init/etcd.conf" }
   notify:
     - restart etcd
@@ -11,7 +31,7 @@
   service: name=etcd state=started
 
 - name: register etcd service with the consul agent
-  consul: service_name=etcd service_port={{ etcd_client_port }} script="docker exec etcd etcdctl cluster-health" interval=60s timeout=2s
+  consul: service_name=etcd service_port={{ etcd_client_port }} script="etcdctl cluster-health" interval=60s timeout=2s
 
-- include: skydns.yml
-  when: cluster_dns is defined
+##- include: skydns.yml
+##  when: cluster_dns is defined

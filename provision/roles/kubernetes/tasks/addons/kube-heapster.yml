@@ -8,14 +8,13 @@
   register: kube_heapster_svc_def
 
 - name: Kube-HEAPSTER | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-heapster-rc.yml" state="{{ kube_heapster_rc_def.changed | ternary('latest','present') }}"
-  when: kube_addons_heapster
+  kube: filename="/etc/kubernetes/manifests/kube-heapster-rc.yml" state=latest
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true
 
 - name: Kube-HEAPSTER | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-heapster-svc.yml" state="{{ kube_heapster_svc_def.changed | ternary('latest','present') }}"
+  kube: filename="/etc/kubernetes/manifests/kube-heapster-svc.yml" state=latest
   when: kube_addons_heapster
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
