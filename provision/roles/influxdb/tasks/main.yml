@@ -1,6 +1,6 @@
 ---
 - name: add apt key
-  apt_key: id=2582E0C5 keyserver=keyserver.ubuntu.com state=present
+  apt_key: id=2582E0C5 url="https://repos.influxdata.com/influxdb.key" state=present
 
 - name: add apt repository
   apt_repository: repo='deb https://repos.influxdata.com/ubuntu trusty stable' state=present

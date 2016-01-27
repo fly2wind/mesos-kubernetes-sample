@@ -1,22 +1,18 @@
 ---
 - name: Kube-UI | generate kube-ui pod manifests
   template: src="conf/addons/kube-ui-rc.yml" dest="/etc/kubernetes/manifests/kube-ui-rc.yml" owner=root group=root mode=0644
-  register: kube_ui_rc_def
 
 - name: Kube-UI | generate kube-ui pod manifests
   template: src="conf/addons/kube-ui-svc.yml" dest="/etc/kubernetes/manifests/kube-ui-svc.yml" owner=root group=root mode=0644
-  register: kube_ui_svc_def
 
 - name: Kube-UI | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-ui-rc.yml" state=latest
-  when: kube_addons_ui
+  kube: filename="/etc/kubernetes/manifests/kube-ui-rc.yml" resource=rc namespace=kube-system state=latest
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true
 
 - name: Kube-UI | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-ui-svc.yml" state=latest
-  when: kube_addons_ui
+  kube: filename="/etc/kubernetes/manifests/kube-ui-svc.yml" resource=svc namespace=kube-system state=latest
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true

@@ -19,5 +19,5 @@ script
   if [ -f "/etc/default/consul" ]; then
     . /etc/default/consul
   fi
-  exec /usr/bin/consul agent -config-dir=/etc/consul -data-dir=/var/lib/consul -pid-file=/var/run/consul/consul.pid ${CONSUL_FLAGS}
+  exec /usr/bin/consul agent -config-dir={{ consul_config_dir }} -data-dir={{ consul_data_dir }} -pid-file=/var/run/consul/consul.pid ${CONSUL_FLAGS}
 end script

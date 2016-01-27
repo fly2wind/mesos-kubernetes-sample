@@ -6,22 +6,10 @@
 #  apt_repository: repo='deb http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh trusty-cdh5 contrib' state=present
 
 - name: install zookeeper package
-  apt: name="{{ item }}" install_recommends=no state=present
+  apt: name="{{ item }}" install_recommends=no force=yes state=present
   with_items:
     - zookeeper
     - zookeeperd
-
-- name: install zookeeper scripts
-  copy: src="{{ item }}" dest=/usr/local/bin owner=root group=root mode=0755
-  with_items:
-    - check-zookeeper.sh
-
-- name: generate zookeeper consul-services
-  template: src=consul/{{ item }}.j2 dest=/etc/consul/{{ item }} owner=root group=root mode=0644
-  with_items:
-    - zookeeper-consul.json
-  notify:
-    - reload consul
 
 - name: generate zookeeper id
   template: src=myid.j2 dest=/var/lib/zookeeper/myid owner=root group=root mode=0644
@@ -40,3 +28,6 @@
 
 - name: register zookeeper service
   service: name=zookeeper state=started
+
+- name: register zookeeper service with the consul agent
+  consul: service_name=zookeeper service_port={{ zookeeper_client_port }} script="/usr/share/zookeeper/bin/zkServer.sh status" interval=60s timeout=2s

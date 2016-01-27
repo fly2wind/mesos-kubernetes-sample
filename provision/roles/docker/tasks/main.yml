@@ -6,12 +6,12 @@
   apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' state=present
 
 - name: install kernel extras
-  apt: name="{{ item }}" install_recommends=no state=present
+  apt: name="{{ item }}" install_recommends=no force=yes state=present
   with_items:
     - linux-image-extra-{{ ansible_kernel }}
 
 - name: install package
-  apt: name="{{ item }}" install_recommends=no state=present
+  apt: name="{{ item }}" install_recommends=no force=yes state=present
   with_items:
     - docker-engine
 

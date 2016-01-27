@@ -4,20 +4,23 @@
   with_items:
     - ntp
     - ntpdate
-    - sshpass
     - python-pip
 
 - name: install pip
   pip: name=pip state=latest
 
+- name: install python library
+  pip: name="{{item}}" state=present
+  with_items:
+    - python-consul
+
+- name: install system utilities
+  copy: src="{{item}}" dest="/usr/bin/" owner=root group=root mode=0755
+  with_items:
+    - nsenter
+
 #- name: install docker library
 #  pip: name=docker-py version=1.1.0 state=present
-
-- name: install consul library
-  pip: name=python-consul state=present
-
-- name: install nsenter tools
-  copy: src="nsenter" dest="/usr/bin/" owner=root group=root mode=0755
 
 - name: configure system hosts
   template: src=hosts.j2 dest=/etc/hosts mode=0644

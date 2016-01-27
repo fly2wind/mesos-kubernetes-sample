@@ -13,7 +13,7 @@
 {% if consul_server %}
   "server": true,
   "bootstrap_expect": {{ consul_bootstrap_expect }},
-  "ui_dir": "/usr/share/consul/web-ui",
+  "ui_dir": "{{ consul_user_dir }}/web-ui",
 {% endif %}
-  "data_dir": "/var/lib/consul"
+  "data_dir": "{{ consul_data_dir }}"
 }

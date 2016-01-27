@@ -1,6 +1,6 @@
 ---
 - name: create kube-system namespace
-  kube: filename="/etc/kubernetes/manifests/kube-system.yml"
+  kube: filename="/etc/kubernetes/manifests/kube-system.yml" resource=namespace state=present
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true

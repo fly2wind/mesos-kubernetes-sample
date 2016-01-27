@@ -1,42 +1,40 @@
 ---
+- name: ensure consul directory
+  file: path="{{ item.path }}" state=directory owner=root group=root mode="{{ item.mode | default('0644') }}"
+  with_items:
+    - { path: "{{ consul_config_dir }}", mode: "0644" }
+    - { path: "{{ consul_user_dir }}",   mode: "0644" }
+    - { path: "{{ consul_data_dir }}",   mode: "0644" }
+    - { path: "{{ consul_raft_dir }}",   mode: "0755" }
+
 - name: install consul package
   copy: src="{{ item }}" dest=/usr/bin owner=root group=root mode=0755
   with_items:
     - consul
     - consul-cli
-  notify: 
-    - restart consul
-
-- name: ensure consul directory
-  file: path="{{ item.path }}" state=directory owner=root group=root mode="{{ item.mode | default('0644') }}"
-  with_items:
-    - { path: "/etc/consul" }
-    - { path: "/usr/share/consul" }
-    - { path: "/var/lib/consul", mode: "0755" }
-    - { path: "/var/lib/consul/raft", mode: "0755" }
 
 - name: install consul-ui package
-  copy: src="{{ item }}" dest=/usr/share/consul owner=root group=root mode=0755
+  copy: src="{{ item }}" dest="{{ consul_user_dir }}" owner=root group=root mode=0755
   with_items:
     - web-ui
   when: consul_server
+
+- name: configure consul config
+  template: src=conf/consul.json.j2 dest="{{ consul_config_dir }}/consul.json" owner=root group=root mode=0644
+  notify:
+    - restart consul
+
+- name: generate consul peers
+  template: src=conf/peers.json.j2 dest="{{ consul_raft_dir }}/peers.json" owner=root group=root mode=0644
+  when: consul_server
+  notify:
+    - restart consul
 
 - name: configure consul upstart
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
   with_items:
     - { src: "default/consul.j2",   dest: "/etc/default/consul"   }
     - { src: "init/consul.conf.j2", dest: "/etc/init/consul.conf" }
-  notify:
-    - restart consul
-
-- name: configure consul config
-  template: src=conf/consul.json.j2 dest=/etc/consul/consul.json owner=root group=root mode=0644
-  notify:
-    - restart consul
-
-- name: generate consul peers
-  template: src=conf/peers.json.j2 dest=/var/lib/consul/raft/peers.json owner=root group=root mode=0644
-  when: consul_server
   notify:
     - restart consul
 

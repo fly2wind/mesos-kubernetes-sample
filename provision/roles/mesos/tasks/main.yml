@@ -6,19 +6,11 @@
   apt_repository: repo='deb http://repos.mesosphere.com/ubuntu trusty main' state=present
 
 - name: install mesos package
-  apt: name="{{ item }}" install_recommends=no state=present
+  apt: name="{{ item }}" install_recommends=no force=yes state=present
   with_items:
     - mesos=0.25.0-0.2.70.ubuntu1404
 
-#- name: configure mesos 
-#  template: src=conf/{{ item }}.j2 dest=/etc/mesos/{{ item }} owner=root group=root mode=0644
-#  with_items:
-#    - zk
-#    - ip
-#    - hostname
-#    - cluster
-
-- name: configure mesos-master config
+- name: configure mesos config
   copy: content="{{ item.content }}" dest="{{ item.dest }}" owner=root group=root mode=0644
   with_items:
     - { content: "{{ private_ipv4 }}",                                                dest: "/etc/mesos/ip" }

@@ -10,6 +10,16 @@
   when: inventory_hostname != groups[kube_masters_group][0]
   delegate_to: "{{ groups[kube_masters_group][0] }}"
 
+- name: install kubernetes-master users
+  synchronize: src="{{ kube_users_dir }}" dest="{{ kube_config_dir }}" delete=true use_ssh_args=true
+  when: inventory_hostname != groups[kube_masters_group][0]
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+
+- name: install kubernetes-master tokens
+  synchronize: src="{{ kube_tokens_dir }}" dest="{{ kube_config_dir }}" delete=true use_ssh_args=true
+  when: inventory_hostname != groups[kube_masters_group][0]
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+  
 - name: load kubernetes-master tokens
   slurp: src="{{ kube_tokens_dir }}/{{ item }}-{{ inventory_hostname }}.token"
   with_items:

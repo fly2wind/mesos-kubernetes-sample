@@ -33,5 +33,5 @@
 - name: register etcd service with the consul agent
   consul: service_name=etcd service_port={{ etcd_client_port }} script="etcdctl cluster-health" interval=60s timeout=2s
 
-##- include: skydns.yml
-##  when: cluster_dns is defined
+- include: skydns.yml
+  when: cluster_dns is defined
