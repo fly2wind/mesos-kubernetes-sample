@@ -3,3 +3,6 @@ elasticsearch_servers_group: role=control
 
 
 elasticsearch_runtime: mesos
+
+
+elasticsearch_http_port: 9200

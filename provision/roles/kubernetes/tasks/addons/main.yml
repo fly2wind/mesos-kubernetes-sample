@@ -11,8 +11,8 @@
 - include: kube-dns.yml
   when: kube_addons_dns == true
 
-- include: kube-heapster.yml
-  when: kube_addons_heapster == true
+#- include: kube-logging.yml
+#  when: kube_addons_logging == true
 
-- include: kube-grafana.yml
-  when: kube_addons_grafana == true
+- include: kube-monitoring.yml
+  when: kube_addons_monitoring == true

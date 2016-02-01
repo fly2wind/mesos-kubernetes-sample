@@ -45,7 +45,7 @@ kube_podmaster_dir: "{{ kube_script_dir }}/manifests"
 
 kube_addons_ui: true
 kube_addons_dns: true
-kube_addons_heapster: true
-kube_addons_grafana: true
+kube_addons_logging: true
+kube_addons_monitoring: true
 
 

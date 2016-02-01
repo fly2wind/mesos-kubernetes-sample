@@ -1,0 +1,26 @@
+---
+- name: install elasticsearch scheduler
+  marathon:
+    state: present
+    name: "/elasticsearch"
+    host: "http://127.0.0.1:9080"
+    cpus: 0.2
+    memory: 512.0
+    instances: 1
+    args: 
+      - "--elasticsearchClusterName" 
+      - "cluster"
+      - "--zookeeperMesosUrl"
+      - "zk://zookeeper.service.serv.local:2181/mesos"
+      - "--dataDir"
+      - "/var/lib/mesos/slave/elasticsearch"
+    container:
+      type: "DOCKER"
+      docker:
+        image: "mesos/elasticsearch-scheduler"
+        network: "HOST"
+    env:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+  ignore_errors: yes
+  run_once: true

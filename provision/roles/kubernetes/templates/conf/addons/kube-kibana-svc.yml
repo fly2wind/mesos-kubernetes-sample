@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-kibana
+  namespace: kube-system
+  labels:
+    k8s-app: kube-kibana
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "KubeKibana"
+spec:
+  selector:
+    k8s-app: kube-kibana
+  ports:
+  - port: 80
+    targetPort: 5601

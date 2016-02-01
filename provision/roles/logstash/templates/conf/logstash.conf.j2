@@ -1,0 +1,55 @@
+input {
+{% if 'role=control' in group_names %}
+  file {
+    path => [ "/var/log/mesos/*.INFO", "/var/log/mesos/*.WARNING", "/var/log/mesos/*.ERROR", "/var/log/mesos/*.FATAL" ]
+    type => "mesos-master-logs"
+  }
+  http {
+    codec => json
+    port => 5678
+    type => "marathon-logs"
+  }
+  file {
+    path => "/var/logs/zookeeper/*"
+    type => zookeeper
+  }
+{% endif %}
+{% if 'role=worker' in group_names %}
+  file {
+    path => [ "/var/logs/mesos/*.INFO", "/var/logs/mesos/*.WARNING", "/var/logs/mesos/*.ERROR", "/var/logs/mesos/*.FATAL" ]
+    type => "mesos-slave-logs"
+  }
+  file {
+    path => [ "/tmp/mesos/slaves/*/frameworks/*/executors/*/runs/*/stdout", "/tmp/mesos/slaves/*/frameworks/*/executors/*/runs/*/stderr" ]
+    type => "mesos-framework-logs"
+  }
+{% endif %}
+
+}
+
+output {
+{% if logstash_output_elasticsearch is defined %}
+  elasticsearch {
+  {% for key, val in logstash_output_elasticsearch.iteritems() %}
+    {{ key }} => {{ val | to_nice_json }}
+  {% endfor %}
+  }
+{% endif %}
+{% if logstash_output_kafka is defined %}
+  kafka {
+  {% for key, val in logstash_output_kafka.iteritems() %}
+    {{ key }} => {{ val | to_nice_json }}
+  {% endfor %}
+  }
+{% endif %}
+  file {
+    path => "/var/log/logstash/output.log"
+  }
+
+
+{% if logstash_output_stdout %}
+  stdout {
+    codec => rubydebug
+  }
+{% endif %}
+}

@@ -1,18 +1,15 @@
 ---
-- name: Kube-DNS | generate kube-dns pod manifests
-  template: src="conf/addons/kube-dns-rc.yml" dest="/etc/kubernetes/manifests/kube-dns-rc.yml" owner=root group=root mode=0644
+- name: kube-dns | generate pod manifests
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "conf/addons/kube-dns-rc.yml",  dest: "/etc/kubernetes/manifests/kube-dns-rc.yml"  }
+    - { src: "conf/addons/kube-dns-svc.yml", dest: "/etc/kubernetes/manifests/kube-dns-svc.yml" }
 
-- name: Kube-DNS | generate kube-dns pod manifests
-  template: src="conf/addons/kube-dns-svc.yml" dest="/etc/kubernetes/manifests/kube-dns-svc.yml" owner=root group=root mode=0644
-
-- name: Kube-DNS | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-dns-rc.yml" resource=rc namespace=kube-system state=latest
-  delegate_to: "{{ groups[kube_masters_group][0] }}"
-  ignore_errors: yes
-  run_once: true
-
-- name: Kube-DNS | create or update replication controller
-  kube: filename="/etc/kubernetes/manifests/kube-dns-svc.yml" resource=svc namespace=kube-system state=latest
+- name: kube-dns | register pod manifests
+  kube: filename="{{ item.filename }}" resource="{{ item.resource }}" namespace=kube-system state=latest
+  with_items:
+    - { filename: "/etc/kubernetes/manifests/kube-dns-rc.yml",  resource: "rc"  }
+    - { filename: "/etc/kubernetes/manifests/kube-dns-svc.yml", resource: "svc" }
   delegate_to: "{{ groups[kube_masters_group][0] }}"
   ignore_errors: yes
   run_once: true

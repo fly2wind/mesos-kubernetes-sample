@@ -1,2 +1,6 @@
 ---
-elasticsearch_servers_group: role=control
+logstash_servers_group: role=control
+
+
+
+logstash_output_stdout: false

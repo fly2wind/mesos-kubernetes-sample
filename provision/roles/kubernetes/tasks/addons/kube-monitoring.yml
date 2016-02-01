@@ -1,0 +1,19 @@
+---
+- name: kube-monitoring | generate pod manifests
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "conf/addons/kube-heapster-rc.yml",  dest: "/etc/kubernetes/manifests/kube-heapster-rc.yml"  }
+    - { src: "conf/addons/kube-heapster-svc.yml", dest: "/etc/kubernetes/manifests/kube-heapster-svc.yml" }
+    - { src: "conf/addons/kube-grafana-rc.yml",   dest: "/etc/kubernetes/manifests/kube-grafana-rc.yml"   }
+    - { src: "conf/addons/kube-grafana-svc.yml",  dest: "/etc/kubernetes/manifests/kube-grafana-svc.yml"  }
+
+- name: kube-monitoring | register pod manifests
+  kube: filename="{{ item.filename }}" resource="{{ item.resource }}" namespace=kube-system state=latest
+  with_items:
+    - { filename: "/etc/kubernetes/manifests/kube-heapster-rc.yml",  resource: "rc"  }
+    - { filename: "/etc/kubernetes/manifests/kube-heapster-svc.yml", resource: "svc" }
+    - { filename: "/etc/kubernetes/manifests/kube-grafana-rc.yml",   resource: "rc"  }
+    - { filename: "/etc/kubernetes/manifests/kube-grafana-svc.yml",  resource: "svc" }
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+  ignore_errors: yes
+  run_once: true

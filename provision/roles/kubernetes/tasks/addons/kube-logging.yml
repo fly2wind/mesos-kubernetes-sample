@@ -1,0 +1,19 @@
+---
+- name: kube-logging | generate pod manifests
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+  with_items:
+    - { src: "conf/addons/kube-elasticsearch-rc.yml",  dest: "/etc/kubernetes/manifests/kube-elasticsearch-rc.yml"  }
+    - { src: "conf/addons/kube-elasticsearch-svc.yml", dest: "/etc/kubernetes/manifests/kube-elasticsearch-svc.yml" }
+    - { src: "conf/addons/kube-kibana-rc.yml",   dest: "/etc/kubernetes/manifests/kube-kibana-rc.yml"               }
+    - { src: "conf/addons/kube-kibana-svc.yml",  dest: "/etc/kubernetes/manifests/kube-kibana-svc.yml"              }
+
+- name: kube-logging | register pod manifests
+  kube: filename="{{ item.filename }}" resource="{{ item.resource }}" namespace=kube-system state=latest
+  with_items:
+    #- { filename: "/etc/kubernetes/manifests/kube-elasticsearch-rc.yml",  resource: "rc"  }
+    #- { filename: "/etc/kubernetes/manifests/kube-elasticsearch-svc.yml", resource: "svc" }
+    - { filename: "/etc/kubernetes/manifests/kube-kibana-rc.yml",         resource: "rc"  }
+    - { filename: "/etc/kubernetes/manifests/kube-kibana-svc.yml",        resource: "svc" }
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+  ignore_errors: yes
+  run_once: true
