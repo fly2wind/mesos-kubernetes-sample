@@ -1,0 +1,19 @@
+---
+- name: install logstash scheduler
+  marathon:
+    state: present
+    name: "/logstash"
+    host: "http://127.0.0.1:9080"
+    cpus: 0.2
+    memory: 128.0
+    instances: 1
+    container:
+      type: "DOCKER"
+      docker:
+        image: "mesosphere/etcd-mesos:0.1.0-alpha-target-23-24-25"
+        network: "HOST"
+    env:
+      ZK_URL: "zk://zookeeper.service.serv.local:2181/mesos"
+  delegate_to: "{{ groups[kube_masters_group][0] }}"
+  ignore_errors: yes
+  run_once: true
