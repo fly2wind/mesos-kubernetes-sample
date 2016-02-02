@@ -97,6 +97,12 @@ options:
     required: True
     default: null
     aliases: []
+  ports:
+    description:
+      - List of ports passed to a task
+    required: false
+    default: null
+    aliases: []
   state:
     description:
       - Indicate desired state of the target.
@@ -239,6 +245,13 @@ class Marathon(object):
         if module_constraints != app["constraints"]:
             return True
 
+        if self._module.params["ports"] is None:
+            module_ports = []
+        else:
+            module_ports = self._module.params["ports"]
+        if module_ports != app["ports"]:
+            return True
+
         return False
 
     def sync(self):
@@ -247,11 +260,9 @@ class Marathon(object):
                 app = self._retrieve_app()
                 if self.needs_update(app):
                     self.update(app)
-                    self._module.exit_json(app=self.gather_facts(),
-                                           changed=True)
+                    self._module.exit_json(app=self.gather_facts(), changed=True)
                 else:
-                    self._module.exit_json(app=self.gather_facts(),
-                                           changed=False)
+                    self._module.exit_json(app=self.gather_facts(),changed=False)
             except HTTPError:
                 self.create()
                 self._module.exit_json(app=self.gather_facts(), changed=True)
@@ -407,6 +418,7 @@ class Marathon(object):
     def _updated_data(self):
         return {
             "args": self._module.params["args"],
+            "ports": self._module.params["ports"],
             "backoffFactor": self._module.params["backoff_factor"],
             "backoffSeconds": self._module.params["backoff_seconds"],
             "cmd": self._sanitize_command(),
@@ -454,6 +466,7 @@ def main():
             max_launch_delay_seconds=dict(default=3600, type="int"),
             memory=dict(default=256.0, type="float"),
             name=dict(required=True, type="str"),
+            ports=dict(default=None, type="list"),
             state=dict(default="present", choices=["absent", "present"], type="str"),
             uris=dict(default=None, type="list"),
             wait=dict(default="yes", choices=BOOLEANS, type="bool"),

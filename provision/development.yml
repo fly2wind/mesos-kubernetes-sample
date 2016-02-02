@@ -34,6 +34,7 @@
     - mesos
     - marathon
     - etcd
+    - elasticsearch
     - logstash
     - influxdb
     - kubernetes
